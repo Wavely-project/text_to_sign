@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request,jsonify,send_file
 import psycopg2
 from sentence_transformers import SentenceTransformer
 import torch
@@ -13,8 +13,10 @@ from flask import request, render_template
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Set seeds for reproducibility
 seed = 42
@@ -151,6 +153,23 @@ def get_video_paths(tokens):
 def index():
     return render_template('index.html')
 
+# @app.route('/process_sentence', methods=['POST'])
+# def process_sentence():
+#     sentence = request.form['sentence']
+#     output_path = './static/concatenated.mp4'
+
+#     start_time = time.time()
+#     corrected_sentence = correct_english_grammar(sentence)
+#     fixed_sentence = fix_time_indicators(corrected_sentence)
+#     lemmas = get_lemmatized_words(fixed_sentence)
+#     glosses = semantic_search_multiword_glosses(lemmas)
+#     print(glosses)
+#     gif_paths = get_video_paths(glosses)
+#     concatenate_videos(gif_paths, output_path)
+#     execution_time = time.time() - start_time
+#     print("output_path:", output_path)
+#     return render_template('ressult.html', sentence=corrected_sentence, execution_time=execution_time, output_path=output_path)
+
 @app.route('/process_sentence', methods=['POST'])
 def process_sentence():
     sentence = request.form['sentence']
@@ -164,9 +183,13 @@ def process_sentence():
     print(glosses)
     gif_paths = get_video_paths(glosses)
     concatenate_videos(gif_paths, output_path)
-    execution_time = time.time() - start_time
-    return render_template('ressult.html', sentence=corrected_sentence, execution_time=execution_time, output_path=output_path)
+    # Existing processing logic...
+    # After creating the video file:
 
+    if os.path.exists(output_path):
+        return send_file(output_path, mimetype='video/mp4')
+    else:
+        return jsonify({'error': 'Video file not found'}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001, debug=True, host='0.0.0.0')
