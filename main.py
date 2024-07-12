@@ -94,9 +94,10 @@ def correct_english_grammar(text):
     return corrected_text
 
 
+
 def get_lemmatized_words(sentence):
     doc = nlp(sentence)
-    lemmas = [token.lemma_ for token in doc if token.pos_ in ["PRON", "PROPN", "NOUN", "VERB", "ADJ", "ADV", "NUM"]]
+    lemmas = [token.lemma_ for token in doc if token.pos_ not in ['AUX', 'ADP', 'SYM']]
     return lemmas
 
 def semantic_search_multiword_glosses(lemmas):
@@ -160,6 +161,7 @@ def process_sentence():
 
     start_time = time.time()
     corrected_sentence = correct_english_grammar(sentence)
+    # fixed_sentence = fix_time_indicators(corrected_sentence)
     lemmas = get_lemmatized_words(corrected_sentence)
     glosses = semantic_search_multiword_glosses(lemmas)
     print(glosses)
