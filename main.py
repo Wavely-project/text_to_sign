@@ -6,7 +6,6 @@ import numpy as np
 import faiss
 import language_tool_python
 import spacy
-import re
 import os
 import time
 from flask import request, render_template
@@ -94,22 +93,6 @@ def correct_english_grammar(text):
     corrected_text = language_tool_python.utils.correct(text, matches)
     return corrected_text
 
-import re
-
-def fix_time_indicators(sentence):
-    time_indicators = {
-        "am": "clock",
-        "pm": "clock",
-        "a.m.": "clock",
-        "p.m.": "clock",
-        "A.M.": "clock",
-        "P.M.": "clock",
-        "night": "clock"
-    }
-    pattern = r'\b(' + '|'.join(re.escape(indicator) for indicator in time_indicators.keys()) + r')\b'
-    sentence = re.sub(pattern, lambda x: time_indicators[x.group().lower()], sentence)
-    return sentence
-
 
 def get_lemmatized_words(sentence):
     doc = nlp(sentence)
@@ -177,8 +160,7 @@ def process_sentence():
 
     start_time = time.time()
     corrected_sentence = correct_english_grammar(sentence)
-    fixed_sentence = fix_time_indicators(corrected_sentence)
-    lemmas = get_lemmatized_words(fixed_sentence)
+    lemmas = get_lemmatized_words(corrected_sentence)
     glosses = semantic_search_multiword_glosses(lemmas)
     print(glosses)
     gif_paths = get_video_paths(glosses)
